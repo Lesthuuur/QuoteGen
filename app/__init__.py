@@ -1,9 +1,15 @@
 from flask import Flask, request, render_template, flash, redirect, url_for, session, abort
 import random
-import openai
+
 from datetime import date
 from quotes import emotions_quotes, emotions_array
+import google.generativeai as genai
+
+
 import os
+#genai.configure(api_key=os.environ["AIzaSyAvv0Urk5Ovsdmb4zfrftgIYWHZaRb7obY"])
+genai.configure(api_key="AIzaSyAvv0Urk5Ovsdmb4zfrftgIYWHZaRb7obY")
+
 
 f = open('secret_key.txt', "r")
 secret_key = f.read()
@@ -73,47 +79,91 @@ def login():
 
 def index():
 
-
+    session.pop('emotion', None)
   
     is_logged_in('username')
 
     name = None
     emotion = None
     error = None
-    if request.method == 'POST':
+    # if request.method == 'POST':
 
-        name = request.form.get('name')
-        emotion = request.form.get('emotion')
+    #     name = request.form.get('name')
+    #     emotion = request.form.get('emotion')
 
-        if not name:
-            flash("Name is required", "error")  # Add category here
+    #     if not name:
+    #         flash("Name is required", "error")  # Add category here
 
-        if not emotion:
-            flash("Emotion is required", "error")  # Add category here
+    #     if not emotion:
+    #         flash("Emotion is required", "error")  # Add category here
 
-        if name and emotion:
-            quotes_array_length = len(emotions_quotes.get(emotion, []))
+    #     if name and emotion:
+        
+    #         # random_int = random.randint(0, quotes_array_length - 1)
+    #         # quote_result = emotions_quotes[emotion][random_int]
+
+          
+    #         quote_result = generate(emotion)
             
+    #         session['name'] = name
+    #         session['quote_result'] = quote_result
 
-            if quotes_array_length > 0:
-                random_int = random.randint(0, quotes_array_length - 1)
-                quote_result = emotions_quotes[emotion][random_int]
+    #         return redirect(url_for('quote'))
 
-                session['name'] = name
-                session['quote_result'] = quote_result
+    if request.method == 'GET':
 
-                return redirect(url_for('quote'))
+        name = request.args.get('name')
+        emotion = request.args.get('emotion')
 
-    return render_template('index.html', emotions_array = emotions_array)
+      
+        if name and emotion:
+        
+            # random_int = random.randint(0, quotes_array_length - 1)
+            # quote_result = emotions_quotes[emotion][random_int]
+
+            quote_result = generate(emotion)
+            
+            session['name'] = name
+            session['emotion'] = emotion
+            session['quote_result'] = quote_result
+
+            return redirect(url_for('quote'))
+            
+        return render_template('index.html', emotions_array = emotions_array)
+
+
+
 
 @app.route('/quote')
 def quote():
 
     name = session.get('name')
+    
     quote_result = session.get('quote_result')
 
     return render_template('quote_display.html', name = name, quote_result = quote_result)
 
+# generate new quote of the same emotion
+@app.route('/newQuote')
+def newQuote():
+    name = session.get('name')
+    emotion = session.get('emotion')
+
+    quote_result = generate(emotion)
+
+    return render_template('quote_display.html', name = name, quote_result = quote_result)
+
+
+
+# APP FUNCTIONS
+
+# function for ai generate quote
+
+def generate(emotion):
+    model = genai.GenerativeModel('gemini-1.5-flash')
+    response  = model.generate_content(f'Generate a one random sentence quote about feeling {emotion}')
+    return response.text
+    
 
 
 # @app.errorhandler(404)

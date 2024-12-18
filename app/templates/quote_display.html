@@ -2,13 +2,18 @@
 block contents %}
 
 <div class="container">
+    
     <div class="quotes flex flex-col justify-start items-center ">
+        
         <p class="text-3xl text-center">This is a quote for you {{ name }}</p>
 
         <p class="text-xl mt-10">"{{ quote_result }}"</p>
     </div>
 
-    <a href="{{'/'}}" class="bg-blue-400 p-4 rounded hover:bg-blue-300 ">Generate new Quote</a>
+    <div class="buttons flex justify-center align-center gap-4">
+        <a href="{{'/newQuote'}}" class="bg-blue-400 p-4 rounded hover:bg-blue-300 ">Generate new Quote</a>
+        <a href="{{'/'}}" class="bg-blue-400 p-4 rounded hover:bg-blue-300">Back home</a>
+    </div>
 </div>
 
 {% endblock %}
